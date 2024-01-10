@@ -9,8 +9,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.FileNotFoundException;
+import java.lang.module.FindException;
 import java.util.List;
 import java.util.Optional;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -38,5 +48,90 @@ public class BookServiceImpl implements BookService {
 
         book.get().setAuthors(authors);
         return this.bookRepository.save(book.get());
+    }
+
+    /**
+     *
+     * This function search for a book in the OpenLibrary online system.
+     *
+     * You have to give the book "Works id", it usually starts with "OL"
+     *
+     * @param workId - OpenLibrary works id
+     * @return - returns with the year of the book (type int)
+     */
+
+    public Integer OpenLibraryApi(String workId){
+        try {
+
+            String bookUrl = "https://openlibrary.org/works/"+workId+".json";
+
+            // Az Open Library API URL
+            String apiUrl = bookUrl;
+
+            // HTTP GET kérés elküldése
+            URL url = new URL(apiUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            // Válasz olvasása
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String line;
+            StringBuilder response = new StringBuilder();
+
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            reader.close();
+
+            try {
+                // JSON válasz feldolgozása
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode jsonNode = objectMapper.readTree(String.valueOf(response));
+
+                // A first_publish_date értékének kinyerése
+                String firstPublishDate = jsonNode.path("first_publish_date").asText();
+
+
+
+                if (firstPublishDate.length() >= 4) {
+                    return Integer.parseInt(firstPublishDate.substring(firstPublishDate.length() - 4));
+                }
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            connection.disconnect();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    @Override
+    public void updateBook() {
+       Iterable<Book> books = bookRepository.findAll();
+
+        for (Book book: books) {
+            Integer year = OpenLibraryApi(book.getWorkId());
+            if(year != null){
+                book.setYear(year);
+                bookRepository.save(book);
+            }
+        }
+    }
+
+
+    @Override
+    public List<Book> getBookByParams(String country, Integer from) throws FileNotFoundException {
+
+        if (from != null){
+            return bookRepository.findBooksByParams(country, from).orElseThrow(()-> new FileNotFoundException());
+        }
+
+        return bookRepository.findBooksByParams(country).orElseThrow(()->new FindException());
     }
 }

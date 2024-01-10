@@ -20,6 +20,8 @@ public class Book {
     private String title;
 
     @Column(nullable = false)
+    private Integer year;
+    @Column(nullable = false)
     private String workId;
 
     @ManyToMany(cascade = CascadeType.ALL)
