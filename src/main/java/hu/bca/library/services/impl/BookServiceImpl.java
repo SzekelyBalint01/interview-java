@@ -125,6 +125,13 @@ public class BookServiceImpl implements BookService {
     }
 
 
+    /**
+
+     * @param country REQUIRED
+     * @param from OPTIONAL
+     * @return - returns with books, where the author is from "country" param and the year of the book is not earlier than "from" param. If "from" is null than returns all books, where the author is from "country" param.
+     * @throws FileNotFoundException if the database is empty
+     */
     @Override
     public List<Book> getBookByParams(String country, Integer from) throws FileNotFoundException {
 
