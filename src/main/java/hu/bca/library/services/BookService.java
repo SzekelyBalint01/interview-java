@@ -10,5 +10,5 @@ public interface BookService {
 
     void updateBook();
 
-    List<Book> getBookByParams(String country, Integer from) throws FileNotFoundException;
+    List<Book> getBookByParams(String country, Integer from, Integer to) throws FileNotFoundException;
 }

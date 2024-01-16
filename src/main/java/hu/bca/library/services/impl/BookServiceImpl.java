@@ -133,11 +133,16 @@ public class BookServiceImpl implements BookService {
      * @throws FileNotFoundException if the database is empty
      */
     @Override
-    public List<Book> getBookByParams(String country, Integer from) throws FileNotFoundException {
+    public List<Book> getBookByParams(String country, Integer from, Integer to) throws FileNotFoundException {
 
-        if (from != null){
-            return bookRepository.findBooksByParams(country, from).orElseThrow(()-> new FileNotFoundException());
+        if (from != null && to!= null){
+            return bookRepository.findBooksByParams(country, from, to).orElseThrow(()-> new FileNotFoundException());
+        } else if (from == null && to!= null) {
+            return bookRepository.findBooksByParamTo(country, to).orElseThrow(()-> new FileNotFoundException());
+        } else if (from != null && to == null){
+            return bookRepository.findBooksByParamsFrom(country, from).orElseThrow(()-> new FileNotFoundException());
         }
+
 
         return bookRepository.findBooksByParams(country).orElseThrow(()->new FindException());
     }

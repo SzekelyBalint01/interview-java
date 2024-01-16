@@ -33,9 +33,10 @@ public class BookController {
     }
 
     @RequestMapping("/query/{country}")
-    public ResponseEntity<List<Book>> booksList(@PathVariable(required = true) String country, @RequestParam(required = false) Integer from) throws FileNotFoundException {
+    public ResponseEntity<List<Book>> booksList(@PathVariable(required = true) String country, @RequestParam(required = false) Integer from, @RequestParam(required = false) Integer to ) throws FileNotFoundException {
 
-        List<Book> books = bookService.getBookByParams(country, from);
+        List<Book> books = bookService.getBookByParams(country, from, to);
+
 
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
